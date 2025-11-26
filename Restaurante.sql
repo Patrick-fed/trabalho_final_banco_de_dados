@@ -113,3 +113,37 @@ INNER JOIN cliente c ON c.id = p.id_cliente;
 ALTER TABLE item_pedido DROP column id_cardapio;
 ALTER TABLE item_pedido ADD COLUMN id_itens INT;
 ALTER TABLE item_pedido ADD constraint id_item_fk FOREIGN KEY (id_itens) REFERENCES itens (id);
+
+SELECT
+  c.nome,
+  SUM(i.preco) AS total_gasto_no_mes FROM cliente AS cache
+
+INNER JOIN pedido AS p ON c.id = p.id_cliente
+inner JOIN item_pedido AS ip ON p.id = ip.id_pedido
+inner JOIN itens AS i ON ip.id_itens = i.id
+WHERE p.data_pedido >= coloca a data aq patrick
+GROUP BY c.nome
+HAVING SUM(i.preco) > 500;
+
+SELECT  i.item, 
+COUNT (ip.id) AS quantidade_vendas
+FROM itens AS i
+inner join item_pedido as ip ON i.id = ip.id_itens
+GROUP BY i.item
+ORDER BY quantidade_vendas DESC;
+
+select 
+  c.nome, 
+  sum(i.preco) as valor_total_pedido
+from Cliente as c
+inner join pedido as p on c.id = p.id_cliente
+inner join item_pedido as ip on p.id = ip.id_pedido
+inner join itens as i on ip.id_itens = i.id
+group by c.nome, p.id
+order by valor_total_pedido desc
+limit 1;
+
+select  item,  preco,  despesa_item, 
+(preco - despesa_item) as lucro
+from itens
+order by lucro desc;
