@@ -158,18 +158,6 @@ WHERE p.data_pedido >= '2025-11-07'
 GROUP BY c.nome
 HAVING SUM(i.preco)>500;
 
-SELECT c.nome,
-SUM(i.preco) AS total_gasto_no_mes
-FROM cliente AS c
-INNER JOIN pedido AS p ON c.id = p.id_cliente
-INNER JOIN item_pedido AS ip ON p.id = ip.id_pedido
-INNER JOIN itens AS i ON ip.id_itens = i.id
-WHERE p.data_pedido >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY c.nome
-HAVING SUM(i.preco) > 500
-ORDER BY total_gasto_no_mes DESC;
-
-
 
 -- 5 Quais itens são mais frequentemente vendidos em conjunto?
 
