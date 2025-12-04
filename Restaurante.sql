@@ -124,18 +124,7 @@ GROUP BY i.id, i.item
 ORDER BY total_vendido DESC;
 
 
---4
---coloca a data aq patrick
-SELECT
-  c.nome,
-  SUM(i.preco) AS total_gasto_no_mes FROM cliente AS cache
-
-INNER JOIN pedido AS p ON c.id = p.id_cliente
-inner JOIN item_pedido AS ip ON p.id = ip.id_pedido
-inner JOIN itens AS i ON ip.id_itens = i.id
-WHERE p.data_pedido >= 2025-11-07
-GROUP BY c.nome
-HAVING SUM(i.preco) > 500;
+-- 2 Quais clientes realizaram o maior número de pedidos no último mês?
 
 SELECT c.nome,
 COUNT(DISTINCT p.id) AS total_pedidos,
@@ -149,15 +138,66 @@ GROUP BY c.nome
 ORDER BY total_pedidos DESC;
 
 
---2
-SELECT  i.item, 
-COUNT (ip.id) AS quantidade_vendas
-FROM itens AS i
-inner join item_pedido as ip ON i.id = ip.id_itens
-GROUP BY i.item
-ORDER BY quantidade_vendas DESC;
+-- 3 Quais itens foram pedidos em determinado pedido específico?
 
---7
+SELECT i.item AS nome_item, i.preco, i.despesa_item
+FROM item_pedido ip
+INNER JOIN itens i ON i.id = ip.id_item
+WHERE ip.id_pedido = :id_do_pedido;
+
+
+-- 4 Quais clientes gastaram mais de R$ 500 no último mês?
+
+SELECT
+c.nome,
+SUM(i.preco) AS total_gasto_no_mes FROM cliente AS c
+INNER JOIN pedido AS p ON c.id = p.id_cliente
+inner JOIN item_pedido AS ip ON p.id = ip.id_pedido
+inner JOIN itens AS i ON ip.id_itens = i.id
+WHERE p.data_pedido >= '2025-11-07'
+GROUP BY c.nome
+HAVING SUM(i.preco)>500;
+
+SELECT c.nome,
+SUM(i.preco) AS total_gasto_no_mes
+FROM cliente AS c
+INNER JOIN pedido AS p ON c.id = p.id_cliente
+INNER JOIN item_pedido AS ip ON p.id = ip.id_pedido
+INNER JOIN itens AS i ON ip.id_itens = i.id
+WHERE p.data_pedido >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY c.nome
+HAVING SUM(i.preco) > 500
+ORDER BY total_gasto_no_mes DESC;
+
+
+
+-- 5 Quais itens são mais frequentemente vendidos em conjunto?
+
+SELECT 
+LEAST(i1.item, i2.item) AS item_a,
+GREATEST(i1.item, i2.item) AS item_b,
+COUNT(*) AS vezes_vendidos_juntos
+FROM item_pedido ip1
+INNER JOIN item_pedido ip2 
+    ON ip1.id_pedido = ip2.id_pedido
+   AND ip1.id_item < ip2.id_item       
+JOIN itens i1 ON i1.id = ip1.id_item
+JOIN itens i2 ON i2.id = ip2.id_item
+GROUP BY 
+    LEAST(i1.item, i2.item),
+    GREATEST(i1.item, i2.item)
+ORDER BY vezes_vendidos_juntos DESC;
+
+
+-- 6 Quais pratos do cardápio são os mais lucrativos (maior diferença entre custo e preço de venda)?
+
+select  item,  preco,  despesa_item, 
+(preco - despesa_item) as lucro
+from itens
+order by lucro desc;
+
+-- 7 Qual cliente realizou o pedido mais caro?
+
 select 
   c.nome, 
   sum(i.preco) as valor_total_pedido
@@ -166,37 +206,8 @@ inner join pedido as p on c.id = p.id_cliente
 inner join item_pedido as ip on p.id = ip.id_pedido
 inner join itens as i on ip.id_itens = i.id
 group by c.nome, p.id
-order by valor_total_pedido desc
-limit 1;
-
---5
-SELECT 
-LEAST(i1.item, i2.item) AS item_a,
-GREATEST(i1.item, i2.item) AS item_b,
-COUNT(*) AS vezes_vendidos_juntos
-FROM item_pedido ip1
-JOIN item_pedido ip2 
-    ON ip1.id_pedido = ip2.id_pedido
-   AND ip1.id_item < ip2.id_item
-JOIN itens i1 ON i1.id = ip1.id_item
-JOIN itens i2 ON i2.id = ip2.id_item
-GROUP BY 
-    LEAST(i1.item, i2.item),
-    GREATEST(i1.item, i2.item)
-ORDER BY vezes_vendidos_juntos DESC;
-
---6
-select  item,  preco,  despesa_item, 
-(preco - despesa_item) as lucro
-from itens
-order by lucro desc;
-
-
--- 3 Quais itens foram pedidos em determinado pedido específico?
-SELECT i.item AS nome_item, i.preco, i.despesa_item
-FROM item_pedido ip
-INNER JOIN itens i ON i.id = ip.id_item
-WHERE ip.id_pedido = :id_do_pedido;
+order by valor_total_pedido desc
+limit 1;
 
 -- 8 Quais pedidos estão associados a mais de cinco itens?
 
@@ -208,3 +219,8 @@ JOIN item_pedido ip ON ip.id_pedido = p.id
 GROUP BY p.id, c.nome
 HAVING COUNT(ip.id_item) > 5
 ORDER BY quantidade_itens DESC;
+
+SELECT * FROM item_pedido;
+SELECT * FROM cliente;
+SELECT * FROM itens;
+SELECT * FROM pedido;
