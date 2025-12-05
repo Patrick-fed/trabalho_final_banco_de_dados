@@ -140,10 +140,12 @@ ORDER BY total_pedidos DESC;
 
 -- 3 Quais itens foram pedidos em determinado pedido específico?
 
-SELECT i.item AS nome_item, i.preco, i.despesa_item
+SELECT i.item AS nome_item, c.nome, p.id
 FROM item_pedido ip
-INNER JOIN itens i ON i.id = ip.id_item
-WHERE ip.id_pedido = :id_do_pedido;
+INNER JOIN itens i ON i.id = ip.id_itens
+INNER JOIN pedido p ON p.id = ip.id_pedido
+INNER JOIN cliente c ON c.id = p.id_cliente
+WHERE p.id = 1;
 
 
 -- 4 Quais clientes gastaram mais de R$ 500 no último mês?
